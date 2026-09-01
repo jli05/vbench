@@ -27,7 +27,7 @@
 
 int main(int argc, char **argv)
 {
-    int N = 8000;
+    int N = 5000;
     int iters = 1;
 
     if (argc > 1) N = atoi(argv[1]);
@@ -79,23 +79,6 @@ int main(int argc, char **argv)
      *
      * rocBLAS uses column-major matrices.
      */
-    CHECK_ROCBLAS(
-        rocblas_dgemm(
-            handle,
-            rocblas_operation_none,
-            rocblas_operation_none,
-            N, N, N,
-            &alpha,
-            dA, N,
-            dB, N,
-            &beta,
-            dC, N
-        )
-    );
-
-    /* Make sure the warm-up operation has finished */
-    CHECK_HIP(hipDeviceSynchronize());
-
     /* GPU timing */
     hipEvent_t start, stop;
     CHECK_HIP(hipEventCreate(&start));
@@ -130,7 +113,7 @@ int main(int argc, char **argv)
     /*
      * DGEMM performs approximately 2*N^3 FLOPs.
      */
-    double flops = (double)N * N * N;
+    double flops = 2.0 * N * N * N;
     double gflops = flops / seconds / 1e9;
 
     printf("\nAverage GPU time: %.3f ms\n", seconds * 1000.0);
