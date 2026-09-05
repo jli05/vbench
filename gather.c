@@ -84,11 +84,13 @@ static uint64_t bench_gather(const int32_t *idx,
 {
     uint64_t start = rdtsc_start();
 
+    __m512i vi, v;
+
     for (int it = 0; it < ITERS; ++it) {
         for (size_t i = 0; i < n; i += 16) {
-            __m512i vi = _mm512_loadu_si512(&idx[i]);
+            vi = _mm512_loadu_si512(&idx[i]);
 
-            __m512i v = _mm512_i32gather_epi32(
+            v = _mm512_i32gather_epi32(
                 vi,
                 data,
                 4
@@ -151,7 +153,7 @@ int main(int argc, char **argv)
     make_indices(idx, N, data_elems);
 
     uint64_t cycles = bench_gather(idx, data, N);
-    // uint64_t cycles0 = bench_scalar(idx, data, N);
+    // uint64_t cycles = bench_scalar(idx, data, N);
 
 
     double cpe =
