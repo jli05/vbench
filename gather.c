@@ -10,7 +10,7 @@
 #endif
 
 #ifndef ITERS
-#define ITERS 100
+#define ITERS 10
 #endif
 
 static inline uint64_t rdtsc_start(void)
@@ -50,25 +50,6 @@ static inline void consume_u32(uint32_t x)
     asm volatile("" : : "r"(x) : "memory");
 }
 
-static uint64_t bench_scalar(const int32_t *idx,
-                             const uint32_t *data,
-                             size_t n)
-{
-    uint32_t sum = 0;
-
-    uint64_t start = rdtsc_start();
-
-    for (int it = 0; it < ITERS; ++it) {
-        for (size_t i = 0; i < n; ++i)
-            sum += data[idx[i]];
-    }
-
-    uint64_t end = rdtsc_stop();
-
-    consume_u32(sum);
-    return end - start;
-}
-
 static inline void consume_vector(__m512i v)
 {
     /*
@@ -76,6 +57,22 @@ static inline void consume_vector(__m512i v)
      * but no arithmetic is performed on it.
      */
     asm volatile("" : : "v"(v) : "memory");
+}
+
+static uint64_t bench_scalar(const int32_t *idx,
+                             const uint32_t *data,
+                             size_t n)
+{
+    uint64_t start = rdtsc_start();
+
+    for (int it = 0; it < ITERS; ++it) {
+        for (size_t i = 0; i < n; ++i)
+            consume_u32(data[idx[i]]);
+    }
+
+    uint64_t end = rdtsc_stop();
+
+    return end - start;
 }
 
 static uint64_t bench_gather(const int32_t *idx,
@@ -127,14 +124,14 @@ int main(int argc, char **argv)
     if (argc > 1)
         cpu = atoi(argv[1]);
 
-    const size_t data_elems = (size_t)N * 4;
-
     printf("AVX-512 gather benchmark\n");
     printf("N       = %zu\n", (size_t)N);
     printf("ITERS   = %d\n", ITERS);
     printf("CPU     = %d\n", cpu);
 
-    // pin_cpu(cpu);
+    pin_cpu(cpu);
+
+    const size_t data_elems = (size_t)N * 4;
 
     int32_t *idx = aligned_alloc(64, N * sizeof(*idx));
     uint32_t *data = aligned_alloc(
@@ -153,7 +150,7 @@ int main(int argc, char **argv)
     make_indices(idx, N, data_elems);
 
     uint64_t cycles = bench_gather(idx, data, N);
-    // uint64_t cycles = bench_scalar(idx, data, N);
+    uint64_t cycles0 = bench_scalar(idx, data, N);
 
 
     double cpe =
@@ -161,13 +158,20 @@ int main(int argc, char **argv)
 
     printf("\nResults\n");
     printf("-------\n");
+    printf("scalar\n");
+    printf("cycles       : %llu\n",
+           (unsigned long long)cycles0);
+    printf("cycles/elem  : %.3f\n",
+           (double) cycles0 / ((double) N * ITERS));
+
+    printf("\nvector\n");
     printf("cycles       : %llu\n",
            (unsigned long long)cycles);
-    printf("cycles/elem  : %.3f\n", cpe);
+    printf("cycles/elem  : %.3f\n",
+           (double) cycles / ((double) N * ITERS));
 
     free(idx);
     free(data);
 
     return 0;
 }
-
