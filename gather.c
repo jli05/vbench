@@ -15,20 +15,18 @@
 
 static inline uint64_t rdtsc_start(void)
 {
-    unsigned aux;
     _mm_mfence();
-    uint64_t t = __rdtscp(&aux);
+    uint64_t t = __rdtsc();
     _mm_lfence();
     return t;
 }
 
 static inline uint64_t rdtsc_stop(void)
 {
-    unsigned aux;
     uint64_t t;
 
     _mm_lfence();
-    t = __rdtscp(&aux);
+    t = __rdtsc();
     _mm_mfence();
 
     return t;
@@ -75,7 +73,7 @@ static uint64_t bench_scalar(const int32_t *idx,
     return end - start;
 }
 
-static uint64_t bench_gather(const int32_t *idx,
+static uint64_t bench_vector(const int32_t *idx,
                              const uint32_t *data,
                              size_t n)
 {
@@ -149,7 +147,7 @@ int main(int argc, char **argv)
 
     make_indices(idx, N, data_elems);
 
-    uint64_t cycles = bench_gather(idx, data, N);
+    uint64_t cycles = bench_vector(idx, data, N);
     uint64_t cycles0 = bench_scalar(idx, data, N);
 
 

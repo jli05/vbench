@@ -15,20 +15,18 @@
 
 static inline uint64_t rdtsc_start(void)
 {
-    unsigned aux;
     _mm_mfence();
-    uint64_t t = __rdtscp(&aux);
+    uint64_t t = __rdtsc();
     _mm_lfence();
     return t;
 }
 
 static inline uint64_t rdtsc_stop(void)
 {
-    unsigned aux;
     uint64_t t;
 
     _mm_lfence();
-    t = __rdtscp(&aux);
+    t = __rdtsc();
     _mm_mfence();
 
     return t;
