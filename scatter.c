@@ -75,7 +75,7 @@ static uint64_t bench_scalar(const int32_t *idx,
     return end - start;
 }
 
-static uint64_t bench_gather(const int32_t *idx,
+static uint64_t bench_vector(const int32_t *idx,
                              const uint32_t *data,
                              const int32_t *new_idx,
                              uint32_t *new_data,
@@ -160,12 +160,12 @@ int main(int argc, char **argv)
     }
 
     for (size_t i = 0; i < data_elems; ++i)
-        data[i] = (uint32_t)i;
+        data[i] = (uint32_t)i * 2;
 
     make_indices(idx, N, data_elems, 0x12345678);
     make_indices(new_idx, N, data_elems, 0x23f15a72);
 
-    uint64_t cycles = bench_gather(idx, data, new_idx, new_data, N);
+    uint64_t cycles = bench_vector(idx, data, new_idx, new_data, N);
     uint64_t cycles0 = bench_scalar(idx, data, new_idx, new_data, N);
 
 
