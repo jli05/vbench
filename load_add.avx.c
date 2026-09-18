@@ -63,7 +63,7 @@ static uint64_t bench_scalar(const uint32_t *data,
     uint64_t start = rdtsc_start();
 
     size_t half_n = n / 2;
-    int * b = &data[half_n];
+    const int * b = &data[half_n];
 
     for (int it = 0; it < ITERS; ++it) {
         for (size_t i = 0; i < half_n; ++i)
@@ -81,7 +81,7 @@ static uint64_t bench_vector(const uint32_t *data,
     uint64_t start = rdtsc_start();
 
     size_t half_n = n / 2;
-    int * b = &data[half_n];
+    const int * b = &data[half_n];
 
     __m512i va, vb, res;
 
