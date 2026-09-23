@@ -41,8 +41,8 @@ int main(void)
         exit(EXIT_FAILURE);
 
     for (size_t i = 0; i < N; ++i) {
-        a[i] = rand();
-        b[i] = rand();
+        a[i] = rand() % 10;
+        b[i] = rand() % 10;
     }
 
     run_scalar(N, a, b, result, t);
