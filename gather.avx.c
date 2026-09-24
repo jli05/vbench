@@ -1,49 +1,19 @@
-#define _GNU_SOURCE
 #include <immintrin.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sched.h>
 
-#ifndef N
-#define N (1 << 24)
-#endif
+const size_t N = 1 << 18;
+const size_t M = 4 * N;
 
-#ifndef ITERS
-#define ITERS 10
-#endif
-
-static inline uint64_t rdtsc_start(void)
+static inline unsigned long long rdtsc(void)
 {
     _mm_mfence();
-    uint64_t t = __rdtsc();
-    _mm_lfence();
+    unsigned long long t = __rdtsc();
+    _mm_mfence();
     return t;
 }
 
-static inline uint64_t rdtsc_stop(void)
-{
-    uint64_t t;
-
-    _mm_lfence();
-    t = __rdtsc();
-    _mm_mfence();
-
-    return t;
-}
-
-static void pin_cpu(int cpu)
-{
-    cpu_set_t set;
-
-    CPU_ZERO(&set);
-    CPU_SET(cpu, &set);
-
-    if (sched_setaffinity(0, sizeof(set), &set) != 0)
-        perror("sched_setaffinity");
-}
-
-static inline void consume_u32(uint32_t x)
+static inline void consume_u32(int x)
 {
     asm volatile("" : : "r"(x) : "memory");
 }
@@ -57,118 +27,72 @@ static inline void consume_vector(__m512i v)
     asm volatile("" : : "v"(v) : "memory");
 }
 
-static uint64_t bench_scalar(const int32_t *idx,
-                             const uint32_t *data,
-                             size_t n)
+void bench_scalar(size_t n, const int *data,
+                  const size_t *indices,
+                  unsigned long long *t)
 {
-    uint64_t start = rdtsc_start();
-
-    for (int it = 0; it < ITERS; ++it) {
-        for (size_t i = 0; i < n; ++i)
-            consume_u32(data[idx[i]]);
-    }
-
-    uint64_t end = rdtsc_stop();
-
-    return end - start;
+    t[0] = rdtsc();
+    for (size_t i = 0; i < n; ++i)
+        consume_u32(data[indices[i]]);
+    t[1] = rdtsc();
 }
 
-static uint64_t bench_vector(const int32_t *idx,
-                             const uint32_t *data,
-                             size_t n)
+void bench_vector(size_t n, const int *data,
+                  const size_t *indices,
+                  unsigned long long *t)
 {
-    uint64_t start = rdtsc_start();
+    t[0] = rdtsc();
 
-    __m512i vi, v;
+    __m512i vi;
+    __m256i v;
 
-    for (int it = 0; it < ITERS; ++it) {
-        for (size_t i = 0; i < n; i += 16) {
-            vi = _mm512_loadu_si512(&idx[i]);
-
-            v = _mm512_i32gather_epi32(
-                vi,
-                data,
-                4
-            );
-
-            consume_vector(v);
-        }
+    for (size_t i = 0; i < n; i += 8) {
+        vi = _mm512_loadu_si512(&indices[i]);
+        v = _mm512_i64gather_epi32(vi, data, 4);
+        asm volatile("" : : "v"(v) : "memory");
     }
 
-    uint64_t end = rdtsc_stop();
-
-    return end - start;
+    t[1] = rdtsc();
 }
 
-static void make_indices(int32_t *idx,
-                          size_t n,
-                          size_t data_elems)
+static void make_indices(size_t *idx,
+                         size_t n,
+                         size_t data_elems)
 {
-    uint32_t x = 0x12345678;
+    size_t x = 0x12345678;
 
     for (size_t i = 0; i < n; ++i) {
         x ^= x << 13;
         x ^= x >> 17;
         x ^= x << 5;
 
-        idx[i] = (int32_t)(x % data_elems);
+        idx[i] = x % data_elems;
     }
 }
 
 int main(int argc, char **argv)
 {
-    int cpu = 0;
+    int *data = malloc(M * sizeof(int));
+    size_t *indices = malloc(N * sizeof(size_t));
+    if (!data)
+        exit(EXIT_FAILURE);
+    if (!indices)
+        exit(EXIT_FAILURE);
 
-    if (argc > 1)
-        cpu = atoi(argv[1]);
+    for (size_t i = 0; i < N; ++i)
+        data[i] = rand();
+    make_indices(indices, N, M);
 
-    printf("AVX-512 gather benchmark\n");
-    printf("N       = %zu\n", (size_t)N);
-    printf("ITERS   = %d\n", ITERS);
-    printf("CPU     = %d\n", cpu);
+    unsigned long long t[2];
 
-    pin_cpu(cpu);
+    bench_scalar(N, data, indices, t);
+    printf("Scalar\t%llu cycles\t%.2f elems/cycle\n",
+           t[1] - t[0], (double) N / (t[1] - t[0]));
 
-    const size_t data_elems = (size_t)N * 4;
+    bench_vector(N, data, indices, t);
+    printf("Vector\t%llu cycles\t%.2f elems/cycle\n",
+           t[1] - t[0], (double) N / (t[1] - t[0]));
 
-    int32_t *idx = aligned_alloc(64, N * sizeof(*idx));
-    uint32_t *data = aligned_alloc(
-        64,
-        data_elems * sizeof(*data)
-    );
-
-    if (!idx || !data) {
-        perror("aligned_alloc");
-        return 1;
-    }
-
-    for (size_t i = 0; i < data_elems; ++i)
-        data[i] = (uint32_t)i;
-
-    make_indices(idx, N, data_elems);
-
-    uint64_t cycles = bench_vector(idx, data, N);
-    uint64_t cycles0 = bench_scalar(idx, data, N);
-
-
-    double cpe =
-        (double)cycles / ((double)N * ITERS);
-
-    printf("\nResults\n");
-    printf("-------\n");
-    printf("scalar\n");
-    printf("cycles       : %llu\n",
-           (unsigned long long)cycles0);
-    printf("cycles/elem  : %.3f\n",
-           (double) cycles0 / ((double) N * ITERS));
-
-    printf("\nvector\n");
-    printf("cycles       : %llu\n",
-           (unsigned long long)cycles);
-    printf("cycles/elem  : %.3f\n",
-           (double) cycles / ((double) N * ITERS));
-
-    free(idx);
     free(data);
 
     return 0;
