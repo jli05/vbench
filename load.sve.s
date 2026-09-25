@@ -38,7 +38,7 @@ run_vector:
         str     x5, [x2, #8]
 
 run_vector_loop:
-	whilelt	p7.s, x6, x0
+	whilelo	p7.s, x6, x0
 	sbfiz	x5, x6, #2, #32
 	add	x7, x1, x5
 	ld1w	{z31.s}, p7/z, [x7]

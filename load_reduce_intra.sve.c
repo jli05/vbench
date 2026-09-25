@@ -22,7 +22,7 @@ static inline long read_counter_frequency(void)
     return freq;
 }
 
-void run_scalar(size_t n, int *a, int *result, long *t)
+void run_scalar(size_t n, const int *a, int *result, long *t)
 {
     t[0] = read_clock_counter();
     int sum = 0;
@@ -33,9 +33,9 @@ void run_scalar(size_t n, int *a, int *result, long *t)
     t[1] = read_clock_counter();
 }
 
-void run_vector(size_t n, int *a, int *result, long *t);
+void run_vector(size_t n, const int *a, int *result, long *t);
 
-void print_int_vector(size_t n, int *a);
+void print_int_vector(size_t n, const int *a);
 
 int main(void)
 {
