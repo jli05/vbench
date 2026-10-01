@@ -78,7 +78,7 @@ int main(void)
 
     for (size_t i = 0; i < N; ++i)
         if (b[i] != c[i])
-           printf("b[%lu] = %d, c[%lu] = %d\n", i, b[i], i, c[i]);
+            fprintf(stderr, "b[%lu] = %d, c[%lu] = %d\n", i, b[i], i, c[i]);
 
     freq = read_counter_frequency();
     printf("Freq\t%.2e Hz\n", (double) freq);
