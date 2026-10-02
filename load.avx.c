@@ -1,18 +1,25 @@
-#include <immintrin.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
+#include <stdio.h>
+#include <immintrin.h>
 
-const size_t N = 1 << 18;
+const size_t N = 1 << 25;
+const size_t print_n = (N > 10)? 10 : N;
 
-static inline unsigned long long rdtsc(void)
+typedef int elem_type;
+typedef unsigned long long clock_counter_type;
+
+const size_t n_elems = 512 / (sizeof(elem_type) << 3);
+
+static inline clock_counter_type rdtsc(void)
 {
     _mm_mfence();
-    unsigned long long t = __rdtsc();
+    clock_counter_type t = __rdtsc();
     _mm_mfence();
     return t;
 }
 
-static inline void consume_u32(int x)
+static inline void consume_scalar(elem_type x)
 {
     asm volatile("" : : "r"(x) : "memory");
 }
@@ -26,23 +33,23 @@ static inline void consume_vector(__m512i v)
     asm volatile("" : : "v"(v) : "memory");
 }
 
-void bench_scalar(size_t n, const int *data,
-                  unsigned long long *t)
+void run_scalar(size_t n, const elem_type *data,
+                  clock_counter_type *t)
 {
     t[0] = rdtsc();
     for (size_t i = 0; i < n; ++i)
-        consume_u32(data[i]);
+        consume_scalar(data[i]);
     t[1] = rdtsc();
 }
 
-void bench_vector(size_t n, const int *data,
-                  unsigned long long *t)
+void run_vector(size_t n, const elem_type *data,
+                  clock_counter_type *t)
 {
     t[0] = rdtsc();
 
     __m512i vi;
 
-    for (size_t i = 0; i < n; i += 16) {
+    for (size_t i = 0; i < n; i += n_elems) {
         vi = _mm512_loadu_si512(&data[i]);
         consume_vector(vi);
     }
@@ -52,24 +59,24 @@ void bench_vector(size_t n, const int *data,
 
 int main(int argc, char **argv)
 {
-    int *data = malloc(N * sizeof(int));
-    if (!data)
-        exit(EXIT_FAILURE);
+    elem_type *a = malloc(N * sizeof(elem_type));
+    if (a == NULL)
+        err(EXIT_FAILURE, "a alloc");
 
     for (size_t i = 0; i < N; ++i)
-        data[i] = rand();
+        a[i] = rand();
 
-    unsigned long long t[2];
+    clock_counter_type t[2];
 
-    bench_scalar(N, data, t);
+    run_scalar(N, a, t);
     printf("Scalar\t%llu cycles\t%.2f elems/cycle\n",
            t[1] - t[0], (double) N / (t[1] - t[0]));
 
-    bench_vector(N, data, t);
+    run_vector(N, a, t);
     printf("Vector\t%llu cycles\t%.2f elems/cycle\n",
            t[1] - t[0], (double) N / (t[1] - t[0]));
 
-    free(data);
+    free(a);
 
     return 0;
 }
