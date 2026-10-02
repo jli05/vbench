@@ -7,20 +7,11 @@ const size_t N = 1 << 25;
 const size_t print_n = (N > 10)? 10 : N;
 
 typedef int elem_type;
+typedef unsigned long clock_counter_type;
 
-static inline long read_clock_counter()
+static inline clock_counter_type read_counter_frequency(void)
 {
-    long counter;
-    asm volatile("isb\n"
-                 "mrs %0, cntvct_el0\n"
-		 "isb\n"
-                 : "=r"(counter));
-    return counter;
-}
-
-static inline long read_counter_frequency(void)
-{
-    long freq;
+    clock_counter_type freq;
     asm volatile("mrs %0, cntfrq_el0" : "=r"(freq));
     return freq;
 }
@@ -34,7 +25,7 @@ void print_long_vector(size_t n, const long *a);
 int main(void)
 {
     elem_type *a;
-    long t[3], freq;
+    clock_counter_type t[3], freq;
 
     a = malloc(N * sizeof(elem_type));
     if (a == NULL)
@@ -50,14 +41,14 @@ int main(void)
     print_int_vector(print_n, a);
 
     run_scalar(N, a, t);
-    printf("Scalar\t%ld cycles\t%.2f elems/cycle\n", t[1] - t[0],
+    printf("Scalar\t%lu cycles\t%.2f elems/cycle\n", t[1] - t[0],
            (double) N / (t[1] - t[0]));
 
     run_vector(N, a, t);
-    printf("SVE\t%ld cycles\t%.2f elems/cycle\n", t[2] - t[0],
+    printf("SVE\t%lu cycles\t%.2f elems/cycle\n", t[2] - t[0],
            (double) N / (t[2] - t[0]));
-    printf("cnt_\t%ld cycles\n", t[1] - t[0]);
-    printf("rem\t%ld cycles\n", t[2] - t[1]);
+    printf("cnt_\t%lu cycles\n", t[1] - t[0]);
+    printf("rem\t%lu cycles\n", t[2] - t[1]);
 
     freq = read_counter_frequency();
     printf("Freq\t%.2e Hz\n", (double) freq);
