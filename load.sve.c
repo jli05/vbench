@@ -4,7 +4,6 @@
 #include <arm_sve.h>
 
 const size_t N = 1 << 25;
-const size_t print_n = (N > 10)? 10 : N;
 
 typedef int elem_type;
 typedef unsigned long clock_counter_type;
@@ -34,11 +33,6 @@ int main(void)
     for (size_t i = 0; i < N; ++i) {
         a[i] = rand();
     }
-
-    printf("N\t%ld\n", N);
-
-    printf("a: ");
-    print_int_vector(print_n, a);
 
     run_scalar(N, a, t);
     printf("Scalar\t%lu cycles\t%.2f elems/cycle\n", t[1] - t[0],

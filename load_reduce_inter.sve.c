@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <arm_sve.h>
 
-const size_t N = 1 << 28;
-const size_t print_n = (N > 10)? 10 : N;
+const size_t N = 1 << 25;
 
 typedef int elem_type;
 typedef unsigned long clock_counter_type;
@@ -26,70 +25,51 @@ static inline clock_counter_type read_counter_frequency(void)
     return freq;
 }
 
-void run_scalar(size_t n, const elem_type *a, elem_type *result,
-                clock_counter_type *t)
+elem_type run_scalar(size_t n, const elem_type *a,
+                     clock_counter_type *t)
 {
     t[0] = read_clock_counter();
     elem_type sum = 0;
     for (size_t i = 0; i < n; ++i) {
         sum += a[i];
     }
-    *result = sum;
     t[1] = read_clock_counter();
+    return sum;
 }
 
-void run_vector(size_t n, const elem_type *a, elem_type *result,
-                clock_counter_type *t);
-
-void print_int_vector(size_t n, const int *a);
-void print_long_vector(size_t n, const long *a);
+elem_type run_vector(size_t n, const elem_type *a,
+                     clock_counter_type *t);
 
 int main(void)
 {
-    elem_type *a, *b, *c;
+    elem_type *a, b, c;
     clock_counter_type t[3], freq;
 
     a = malloc(N * sizeof(elem_type));
     if (a == NULL)
         err(EXIT_FAILURE, "a malloc");
-    b = malloc(sizeof(elem_type));
-    if (b == NULL)
-        err(EXIT_FAILURE, "b malloc");
-    c = malloc(sizeof(elem_type));
-    if (c == NULL)
-        err(EXIT_FAILURE, "c malloc");
-
-    printf("N\t%lu\n", N);
 
     for (size_t i = 0; i < N; ++i) {
-        a[i] = rand() % 4;
+        a[i] = rand();
     }
-    printf("a: ");
-    print_int_vector(print_n, a);
 
-    run_scalar(N, a, b, t);
-    printf("Scalar result: %d\n", *b);
-
+    b = run_scalar(N, a, t);
     printf("Scalar\t%lu cycles\t%.2f elems/cycle\n", t[1] - t[0],
            (double) N / (t[1] - t[0]));
 
-    run_vector(N, a, c, t);
-    printf("Vector result: %d\n", *c);
-
+    c = run_vector(N, a, t);
     printf("SVE\t%lu cycles\t%.2f elems/cycle\n", t[2] - t[0],
            (double) N / (t[2] - t[0]));
     printf("cnt_\t%lu cycles\n", t[1] - t[0]);
     printf("rem\t%lu cycles\n", t[2] - t[1]);
 
-    if (*b != *c)
+    if (b != c)
         fprintf(stderr, "b != c\n");
 
     freq = read_counter_frequency();
     printf("Freq\t%.2e Hz\n", (double) freq);
 
     free(a);
-    free(b);
-    free(c);
 
     return 0;
 }

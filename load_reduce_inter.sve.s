@@ -5,12 +5,12 @@ run_vector:
 	isb
 	mrs	x5, cntvct_el0
 	isb
-	str	x5, [x3]
+	str	x5, [x2]
 	cntw	x8
         isb
         mrs     x5, cntvct_el0
         isb
-        str     x5, [x3, #8]
+        str     x5, [x2, #8]
 	cmp	x0, #0x0
 	b.le	run_vector_return
 	mov	x6, #0x0                   	// #0
@@ -29,10 +29,9 @@ run_vector_loop:
 run_vector_return:
         ptrue   p7.s
         saddv   d11, p7, z30.s
-        fmov    x11, d11
-        str     w11, [x2]
+        fmov    x0, d11
 	isb
 	mrs	x5, cntvct_el0
 	isb
-	str	x5, [x3, #16]
+	str	x5, [x2, #16]
 	ret

@@ -4,7 +4,6 @@
 #include <immintrin.h>
 
 const size_t N = 1 << 25;
-const size_t print_n = (N > 10)? 10 : N;
 
 typedef int elem_type;
 typedef unsigned long long clock_counter_type;
