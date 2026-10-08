@@ -10,6 +10,8 @@ typedef unsigned long long clock_counter_type;
 
 const size_t n_elems = 512 / (sizeof(elem_type) << 3);
 
+double now_seconds(void);
+
 static inline clock_counter_type rdtsc(void)
 {
     _mm_mfence();
@@ -66,14 +68,19 @@ int main(int argc, char **argv)
         a[i] = rand();
 
     clock_counter_type t[2];
+    double u[2];
 
+    u[0] = now_seconds();
     run_scalar(N, a, t);
-    printf("Scalar\t%llu cycles\t%.2f elems/cycle\n",
-           t[1] - t[0], (double) N / (t[1] - t[0]));
+    u[1] = now_seconds();
+    printf("Scalar\t%.1fG elems/sec\t%.2f elems/cycle\n",
+           (double) N / (u[1] - u[0]) / 1e9, (double) N / (t[1] - t[0]));
 
+    u[0] = now_seconds();
     run_vector(N, a, t);
-    printf("Vector\t%llu cycles\t%.2f elems/cycle\n",
-           t[1] - t[0], (double) N / (t[1] - t[0]));
+    u[1] = now_seconds();
+    printf("Vector\t%.1fG elems/sec\t%.2f elems/cycle\n",
+           (double) N / (u[1] - u[0]) / 1e9, (double) N / (t[1] - t[0]));
 
     free(a);
 
