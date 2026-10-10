@@ -4,12 +4,12 @@ Traditionally-designed CPU carries out arithmetic or logical compute one per clo
 
 The CPU vector extensions or GPUs can carry out multiple arithmetic operations per clock cycle, increasing the compute throughput by orders. The CPU state would be more deterministic executing vector instructions, largely increasing introspectability and security.
 
-A GPU is traditionally designed with many cores, which can each be separately programmed, for graphics or scientific processing. The recent Nvidia [Tensor Cores](https://www.nvidia.com/en-us/data-center/tensor-cores/) are specialised for [matrix-matrix multiplication](https://developer.nvidia.com/blog/programming-tensor-cores-cuda-9/). The precision of the operands can be reduced. For example, for 32-bit multiplication, they first cast each 32-bit operand to 16-bit, multiply them to obtain a 32-bit result. The throughput would double compared to multiplication of two 32-bit operands.
+A GPU is traditionally designed with many cores, which can each be separately programmed, for graphics or scientific processing. The recent Nvidia [Tensor Cores](https://www.nvidia.com/en-us/data-center/tensor-cores/) are specialised for [matrix-matrix multiplication](https://developer.nvidia.com/blog/programming-tensor-cores-cuda-9/). The precision of the operands can be reduced. For example, for 32-bit multiplication, one may first cast each 32-bit operand to 16-bit, multiply them to obtain a 32-bit result. The throughput would double compared to multiplication of two 32-bit operands.
 
 ## Compute-bound vs Memory-bound
 If after loading <math><mi>n</mi></math> elements of a vector, the number of arithmetic operations will be the same, the program is [memory-bound](https://en.wikipedia.org/wiki/Memory-bound_function). But if the number of arithmetic operations will be higher by some orders, the program is [compute-bound](https://en.wikipedia.org/wiki/CPU-bound).
 
-The first four programs are memory-bound. The last is compute-bound.
+The first four benchmarking programs are memory-bound. The last is compute-bound.
 
 | Program  | Description |
 | -------- | ------------ |
@@ -50,7 +50,7 @@ and make other necessary change.
 
 ## Results
 ### memory-bound tasks
-[Graviton3](https://en.wikipedia.org/wiki/AWS_Graviton) is an ARM processor designed by Amazon Web Services which implements the Scalable Vector Extension, with 512-bit vector processing width. On one vector of 512 bits,
+[Graviton3](https://en.wikipedia.org/wiki/AWS_Graviton) is an ARM processor designed by Amazon Web Services, with 512-bit vector processing width. On one vector of 512 bits,
 
 | Program | CPU clock cycles  |
 | ------- | ----------------- |
@@ -58,6 +58,8 @@ and make other necessary change.
 | load_reduce_inter | 5 |
 | load_reduce_intra | 6.5 |
 | load_store | 8.2  |
+
+So the load or write-out takes longest time. Reduction intra-vector takes slightly longer than inter-vector reduction in this instance.
 
 ### compute-bound task
 On x86-64, use command `taskset` to specify the CPUs to execute a program on,
@@ -75,7 +77,7 @@ sudo turbostat --show CPU,frequency,CorWatt,PkgWatt
 
 On an AMD CPU package, when we allocate more CPUs to `gemm`, each CPU tends to run at lower clock frequency and consume less power, and vice versa when we allocate fewer CPUs.
 
-Across settings, we can collect the data pair (frequency, watt) of the CPU cores, plotted as below,
+Across settings, we can collect samples of the data pair (frequency, watt), plotted as below,
 
 ![frequency-watt scatter plot](/assets/power.png)
 
