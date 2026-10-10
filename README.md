@@ -77,7 +77,7 @@ sudo turbostat --show CPU,frequency,CorWatt,PkgWatt
 
 On an AMD CPU package, when we allocate more CPUs to `gemm`, each CPU tends to run at lower clock frequency and consume less power, and vice versa when we allocate fewer CPUs.
 
-Across settings, we can collect samples of the data pair (frequency, watt), plotted as below,
+Across settings, we can collect samples of the data pair (frequency, watt) of CPU cores, plotted as below,
 
 ![frequency-watt scatter plot](/assets/power.png)
 
