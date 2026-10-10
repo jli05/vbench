@@ -37,6 +37,13 @@ export PATH=$PATH:/usr/local/cuda/bin
 nvcc -O1 gemm.cuda.c -lcublas -o gemm.cuda
 ```
 
+The vector elements are 32-bit. To change to 64-bit elements, in the C file, change `elem_type` for example
+
+```c
+    typedef long elem_type;
+```
+
+and make other necessary change.
 
 ## Results
 
