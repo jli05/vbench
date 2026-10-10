@@ -20,13 +20,6 @@ static inline clock_counter_type read_clock_counter()
     return counter;
 }
 
-static inline clock_counter_type read_counter_frequency(void)
-{
-    clock_counter_type freq;
-    asm volatile("mrs %0, cntfrq_el0" : "=r"(freq));
-    return freq;
-}
-
 elem_type run_scalar(size_t n, const elem_type *a,
                      clock_counter_type *t)
 {
@@ -45,7 +38,7 @@ elem_type run_vector(size_t n, const elem_type *a,
 int main(void)
 {
     elem_type *a, b, c;
-    clock_counter_type t[3], freq;
+    clock_counter_type t[3];
     double u[2];
 
     a = malloc(N * sizeof(elem_type));
@@ -72,9 +65,6 @@ int main(void)
 
     if (b != c)
         fprintf(stderr, "b != c\n");
-
-    freq = read_counter_frequency();
-    printf("Freq\t%.2e Hz\n", (double) freq);
 
     free(a);
 

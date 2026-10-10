@@ -10,13 +10,6 @@ typedef unsigned long clock_counter_type;
 
 double now_seconds(void);
 
-static inline clock_counter_type read_counter_frequency(void)
-{
-    clock_counter_type freq;
-    asm volatile("mrs %0, cntfrq_el0" : "=r"(freq));
-    return freq;
-}
-
 void run_scalar(size_t n, const elem_type *a, long *t);
 void run_vector(size_t n, const elem_type *a, long *t);
 
@@ -26,7 +19,7 @@ void print_long_vector(size_t n, const long *a);
 int main(void)
 {
     elem_type *a;
-    clock_counter_type t[3], freq;
+    clock_counter_type t[3];
     double u[2];
 
     a = malloc(N * sizeof(elem_type));
@@ -50,9 +43,6 @@ int main(void)
            (double) N / (u[1] - u[0]) / 1e9, (double) N / (t[2] - t[0]));
     printf("cnt_\t%lu cycles\n", t[1] - t[0]);
     printf("rem\t%lu cycles\n", t[2] - t[1]);
-
-    freq = read_counter_frequency();
-    printf("Freq\t%.2e Hz\n", (double) freq);
 
     free(a);
 
