@@ -60,7 +60,7 @@ and make other necessary change.
 | load_store | 8.2  |
 
 ### compute-bound task
-On x86-64, use command `taskset` to specify the CPUs to execute a program on.
+On x86-64, use command `taskset` to specify the CPUs to execute a program on,
 
 ```sh
 # to run on CPUs with id 0, 2 and 4
@@ -77,9 +77,9 @@ On an AMD CPU package, when we allocate more CPUs to `gemm`, each CPU tends to r
 
 Across settings, we can collect the data pair (frequency, watt) of the CPU cores, plotted as below,
 
+![frequency-watt scatter plot](/assets/power.png)
 
-
-Actually, from 2.5 GHz to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clock frequency, and much faster once beyond 4 GHz.
+Actually, up to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clock frequency, and much faster once beyond 4 GHz.
 
 
 
