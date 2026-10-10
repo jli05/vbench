@@ -49,6 +49,8 @@ The vector elements are 32-bit. To change to 64-bit elements, in the C file, cha
 and make other necessary change.
 
 ## Results
+Below we highlight some results.
+
 ### memory-bound tasks
 [Graviton3](https://en.wikipedia.org/wiki/AWS_Graviton) is an ARM processor designed by Amazon Web Services, with 512-bit vector processing width. On one vector of 512 bits,
 
