@@ -7,22 +7,48 @@ The CPU vector extensions or GPUs can carry out multiple arithmetic operations p
 A GPU is traditionally designed with many cores, which can each be separately programmed, for graphics or scientific processing. The recent Nvidia [Tensor Cores](https://www.nvidia.com/en-us/data-center/tensor-cores/) are specialised for [matrix-matrix multiplication](https://developer.nvidia.com/blog/programming-tensor-cores-cuda-9/). The precision of the operands can be reduced. For example, for 32-bit multiplication, they first cast each 32-bit operand to 16-bit, multiply them to obtain a 32-bit result. The throughput would double compared to multiplication of two 32-bit operands.
 
 ## Compute-bound vs Memory-bound
-If after loading <math><mi>n</mi></math>
+If after loading <math><mi>n</mi></math> elements of a vector, the number of arithmetic operations will be the same, the program is memory-bound. But if the number of arithmetic operations will be higher by some orders, the program is compute-bound.
 
+The first four programs are memory-bound. The last is compute-bound.
+
+| Program  | Description |
+| -------- | ------------ |
 | load     | read the elements of a vector   |
+| load_reduce_inter | sum reduction: create an all-zero `vsum` vector, first loop through and add each sub-vector to `vsum`, lastly sum reduce `vsum` to a scalar value |
+| load_reduce_intra | sum reduction: create a zero `sum`, loop through and sum reduce each sub-vector, add to `sum` |
 | load_store | read and copy out the elements of a vector |
-| load_reduce_inter | sum reduction, first add each sub-vector to a vector, lastly sum reduce that vector to a scalar value |
-| load_reduce_intra | sum reduction,
+| gemm      | matrix-matrix multiplication |
+
+To compile them, for example:
+
+```sh
+gcc -O -march=armv8-a+sve load_reduce_inter.sve.c load_reduce_inter.sve.s timer.c -o load_reduce_inter.sve
+gcc -O -march=armv8-a+sve cpufreq.sve.c cpufreq.sve.s -o cpufreq.sve
+gcc -O -march=armv8-a+sve gemm.c timer.c -L<blas> -l<blas> -lm -o gemm
+```
+
+```sh
+gcc -O -mavx512f load_store.avx.c timer.c -o load_store.avx
+gcc -O -mavx512f gemm.c timer.c -L<blas> -l<blas> -lm -o gemm
+```
+
+```sh
+export PATH=$PATH:/usr/local/cuda/bin
+nvcc -O1 gemm.cuda.c -lcublas -o gemm.cuda
+```
+
 
 ## Results
 
 
 ## Notes
+To sum reduce a vector of 64-bit integers, on ARM Aarch64 SVE,
 
-```sh
-export PATH=$PATH:/usr/local/cuda/bin
-nvcc -O1 gemm.cuda.c -lcublas
-./a.out
+```asm
+    ptrue   p7.d
+    scvtf   z30.d, p7/m, z30.d
+    faddv   d11, p7, z30.d
+    fcvtms  x10, d11
 ```
 
 
