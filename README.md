@@ -59,7 +59,7 @@ and make other necessary change.
 | load_reduce_intra | 6.5 |
 | load_store | 8.2  |
 
-So the load or write-out takes longest time. Reduction intra-vector takes slightly longer than inter-vector reduction in this instance.
+So the loading or writing of data takes the longest time. Reduction intra-vector takes slightly longer than inter-vector reduction in this instance.
 
 ### compute-bound task
 On x86-64, use command `taskset` to specify the CPUs to execute a program on,
