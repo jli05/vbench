@@ -83,7 +83,7 @@ In the experiments, when we allocate more CPUs to `gemm`, each CPU tends to run 
 
 ![frequency-watt scatter plot](/assets/power.png)
 
-Up to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clock frequency, and sheerly faster beyond 4 GHz. When all cores are allowed to run `gemm`, the entire CPU package consumes 15 watts; when only one core, the entire package consumes 25 watts.
+Up to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clock frequency, and sheerly faster beyond 4 GHz. When all cores are allowed to run `gemm`, the entire CPU package consumes 15 watts; when only one core, the entire package consumes 20 watts.
 
 ## Notes
 ### Basic Linear Algebra Subprograms (BLAS)
