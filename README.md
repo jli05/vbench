@@ -1,4 +1,4 @@
-# Benchmarking of CPU vector extension or GPU compute throughput
+# Benchmarking of CPU vector extension and GPU throughput
 ## Introduction
 Traditionally-designed CPU carries out arithmetic or logical compute one per clock cycle. Afterwards techniques such as speculative [branch prediction](https://en.wikipedia.org/wiki/Branch_predictor) were invented, which would accelerate marginally, whilst introducing security risk such as [Spectre Attack](https://en.wikipedia.org/wiki/Spectre_(security_vulnerability)).
 
