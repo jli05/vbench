@@ -9,14 +9,14 @@ A GPU is traditionally designed with many cores, which can each be programmed se
 ## Compute-bound vs Memory-bound
 If after loading <math><mi>n</mi></math> elements of a vector, the number of arithmetic operations will be the same, the program is [memory-bound](https://en.wikipedia.org/wiki/Memory-bound_function). But if the number of arithmetic operations will be higher by some orders, the program is [compute-bound](https://en.wikipedia.org/wiki/CPU-bound).
 
-The first four benchmarking programs are memory-bound. The last is compute-bound.
+Generally vector extensions can do the element-wise arithmetic operations in one clock cycle. We thus benchmark other aspects. The first four programs are memory-bound. The last is compute-bound. 
 
 | Program  | Description |
 | -------- | ------------ |
-| load     | read the elements of a vector   |
-| load_reduce_inter | sum reduction: create an all-zero `vsum` vector, first loop through and add each sub-vector element-wise to `vsum`, lastly sum reduce `vsum` to a scalar value |
-| load_reduce_intra | sum reduction: create a zero `sum`, loop through and sum reduce each sub-vector, add the scalar result to `sum` |
-| load_store | read and copy out the elements of a vector |
+| load     | load the elements of a vector   |
+| load_reduce_inter | load then sum reduction: create an all-zero `vsum` vector, first loop through and add each sub-vector element-wise to `vsum`, lastly sum reduce `vsum` to a scalar value |
+| load_reduce_intra | load then sum reduction: create a zero `sum`, loop through and sum reduce each sub-vector, add the scalar result to `sum` |
+| load_store | load and copy out the elements of a vector |
 | gemm      | matrix-matrix multiplication |
 
 To make the programs, for example:
