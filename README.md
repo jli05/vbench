@@ -14,7 +14,7 @@ The first four benchmarking programs are memory-bound. The last is compute-bound
 | Program  | Description |
 | -------- | ------------ |
 | load     | read the elements of a vector   |
-| load_reduce_inter | sum reduction: create an all-zero `vsum` vector, first loop through and add each sub-vector to `vsum`, lastly sum reduce `vsum` to a scalar value |
+| load_reduce_inter | sum reduction: create an all-zero `vsum` vector, first loop through and add each sub-vector element-wise to `vsum`, lastly sum reduce `vsum` to a scalar value |
 | load_reduce_intra | sum reduction: create a zero `sum`, loop through and sum reduce each sub-vector, add the scalar result to `sum` |
 | load_store | read and copy out the elements of a vector |
 | gemm      | matrix-matrix multiplication |
@@ -110,7 +110,7 @@ gcc -O -mavx512f gemm.c timer.c -L/opt/OpenBLAS/lib -lopenblas -lm -o gemm
 LD_LIBRARY_PATH=/opt/OpenBLAS/lib ./gemm
 ```
 
-Use vendor-supplied BLAS library may secure higher performance. OpenBLAS has the advantage that it is more widely used and tested.
+Use vendor-supplied BLAS library may secure higher performance, while OpenBLAS has the advantage that it is more widely used and tested.
 
 For example, on AMD, download the AOCL BLAS from AMD Optimizing CPU Libraries (AOCL) page [https://www.amd.com/en/developer/aocl.html](https://www.amd.com/en/developer/aocl.html). Unpack it to for example `/opt/amd-blis`, then make and run `gemm`.
 
