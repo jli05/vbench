@@ -15,11 +15,11 @@ The first four benchmarking programs are memory-bound. The last is compute-bound
 | -------- | ------------ |
 | load     | read the elements of a vector   |
 | load_reduce_inter | sum reduction: create an all-zero `vsum` vector, first loop through and add each sub-vector to `vsum`, lastly sum reduce `vsum` to a scalar value |
-| load_reduce_intra | sum reduction: create a zero `sum`, loop through and sum reduce each sub-vector, add to `sum` |
+| load_reduce_intra | sum reduction: create a zero `sum`, loop through and sum reduce each sub-vector, add the scalar result to `sum` |
 | load_store | read and copy out the elements of a vector |
 | gemm      | matrix-matrix multiplication |
 
-To compile them, for example:
+To make the programs, for example:
 
 ```sh
 # on ARM Aarch64 with Scalable Vector Extension
@@ -83,17 +83,21 @@ In the experiments, when we allocate more CPUs to `gemm`, each CPU tends to run 
 
 ![frequency-watt scatter plot](/assets/power.png)
 
-Up to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clock frequency, and sheerly faster beyond 4 GHz. When all cores are allowed to run `gemm`, the total CPU package consumes 15 watts; when only one core, 25 watts.
+Up to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clock frequency, and sheerly faster beyond 4 GHz. When all cores are allowed to run `gemm`, the entire CPU package consumes 15 watts; when only one core, the entire package consumes 25 watts.
 
 ## Notes
-### BLAS library
-For matrix-matrix multiplication et al, a BLAS library shall be installed for the benchmarking program to make.
+### Basic Linear Algebra Subprograms (BLAS)
+A [Basic Linear Algebra Subgrams](https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms) library is necessary for making `gemm`.
 
-The default binary BLAS libraries usually do not benefit from the vector extensions. `git clone` the source code and make the library. Simply issue `make`, the makefile will configure itself in the best way for the system.
+Implementations include [OpenBLAS](https://github.com/OpenMathLib/OpenBLAS) that work across architectures, or vendor-supplied ones that go further in optimisation for the chips' characteristics.
+
+The default OpenBLAS libraries supplied by Linux package managers usually do not benefit from the vector extensions. Compile from the source code:
 
 ```sh
 git clone https://github.com/OpenMathLib/OpenBLAS
 cd OpenBLAS
+# simply issue make
+# it will be optimally configured for hardware features
 make
 sudo make install PREFIX=/opt/OpenBLAS
 
@@ -106,9 +110,9 @@ gcc -O -mavx512f gemm.c timer.c -L/opt/OpenBLAS/lib -lopenblas -lm -o gemm
 LD_LIBRARY_PATH=/opt/OpenBLAS/lib ./gemm
 ```
 
-Use vendor-supplied BLAS library may secure _higher_ performance, as it is further optimised for the cache sizes on CPU, etc. OpenBLAS has the advantage that it is most widely used and tested.
+Use vendor-supplied BLAS library may secure higher performance. OpenBLAS has the advantage that it is more widely used and tested.
 
-For example, on AMD, download the AOCL BLAS from AMD Optimizing CPU Libraries (AOCL) page [https://www.amd.com/en/developer/aocl.html](https://www.amd.com/en/developer/aocl.html). Unpack it to for example `/opt/amd-blis`, then make the benchmarking program.
+For example, on AMD, download the AOCL BLAS from AMD Optimizing CPU Libraries (AOCL) page [https://www.amd.com/en/developer/aocl.html](https://www.amd.com/en/developer/aocl.html). Unpack it to for example `/opt/amd-blis`, then make and run `gemm`.
 
 ```sh
 # on AMD with Advanced Vector Extension
