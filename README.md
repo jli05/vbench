@@ -77,18 +77,54 @@ In another shell, visualise the clock frequency and power consumption,
 sudo turbostat --show CPU,frequency,CorWatt,PkgWatt
 ```
 
-On an AMD CPU package, when we allocate more CPUs to `gemm`, each CPU tends to run at lower clock frequency and consume less power, and vice versa when we allocate fewer CPUs.
+On an [AMD Ryzen 5 AI CPU package](https://www.amd.com/en/products/processors/laptop/ryzen/ai-300-series/amd-ryzen-ai-5-340.html) with six physical cores, the base clock frequency is 2 GHz for all six, while three can ramp up to 4.8 GHz, three to 3.4 GHz.
 
-Across settings, we can collect samples of the data pair (frequency, watt) of CPU cores, plotted as below,
+In the experiments, when we allocate more CPUs to `gemm`, each CPU tends to run at lower clock frequency and consume less power, and vice versa when we allocate fewer CPUs. Across the experiments, we can collect samples of observed (frequency, watt) of CPU cores, plotted as below,
 
 ![frequency-watt scatter plot](/assets/power.png)
 
-Actually, up to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clock frequency, and much faster once beyond 4 GHz.
-
-
+Up to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clock frequency, and sheerly faster beyond 4 GHz. When all cores are allowed to run `gemm`, the total CPU package consumes 15 watts; when only one core, 25 watts.
 
 ## Notes
-To sum reduce a vector of 64-bit integers, on ARM Aarch64 SVE, first convert to 64-bit floating-point numbers, then convert back after the reduction.
+### BLAS library
+For matrix-matrix multiplication et al, a BLAS library shall be installed for the benchmarking program to make.
+
+The default binary BLAS libraries usually do not benefit from the vector extensions. `git clone` the source code and make the library. Simply issue `make`, the makefile will configure itself in the best way for the system.
+
+```sh
+git clone https://github.com/OpenMathLib/OpenBLAS
+cd OpenBLAS
+make
+sudo make install PREFIX=/opt/OpenBLAS
+
+# on ARM Aarch64 with Scalable Vector Extension
+gcc -O -march=armv8-a+sve gemm.c timer.c -L/opt/OpenBLAS/lib -lopenblas -lm -o gemm
+LD_LIBRARY_PATH=/opt/OpenBLAS/lib ./gemm
+
+# on x86-64 with Advanced Vector Extension
+gcc -O -mavx512f gemm.c timer.c -L/opt/OpenBLAS/lib -lopenblas -lm -o gemm
+LD_LIBRARY_PATH=/opt/OpenBLAS/lib ./gemm
+```
+
+Use vendor-supplied BLAS library may secure _higher_ performance, as it is further optimised for the cache sizes on CPU, etc. OpenBLAS has the advantage that it is most widely used and tested.
+
+For example, on AMD, download the AOCL BLAS from AMD Optimizing CPU Libraries (AOCL) page [https://www.amd.com/en/developer/aocl.html](https://www.amd.com/en/developer/aocl.html). Unpack it to for example `/opt/amd-blis`, then make the benchmarking program.
+
+```sh
+# on AMD with Advanced Vector Extension
+gcc -O -mavx512f gemm.c timer.c -L/opt/amd-blis/lib/LP64 -lblis-mt -lm -o gemm
+LD_LIBRARY_PATH=/opt/amd-blis/lib/LP64 ./gemm
+```
+
+### sum reduce signed integers on ARM Aarch64
+To sum reduce a vector of signed integers lower than 64-bit, directly do `saddv`:
+
+```asm
+    saddv d11, p7, z30.s
+    fmov  x11, d11
+```
+
+To sum reduce a vector of signed 64-bit integers, first convert to 64-bit floating-point numbers, then convert back after the reduction.
 
 ```asm
     ptrue   p7.d
@@ -97,4 +133,4 @@ To sum reduce a vector of 64-bit integers, on ARM Aarch64 SVE, first convert to 
     fcvtms  x10, d11
 ```
 
-
+Other than the pecularity, note from the experiment results that reduction inter-vector (via element-wise operation) can be faster than intra-vector.
