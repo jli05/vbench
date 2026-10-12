@@ -112,7 +112,7 @@ LD_LIBRARY_PATH=/opt/OpenBLAS/lib ./gemm
 
 Using vendor-supplied BLAS library may secure higher performance, while OpenBLAS has the advantage that it is more widely used and tested.
 
-For example, on AMD, download the AOCL BLAS from AMD Optimizing CPU Libraries (AOCL) page [https://www.amd.com/en/developer/aocl.html](https://www.amd.com/en/developer/aocl.html). Unpack it to for example `/opt/amd-blis`, then make and run `gemm`.
+For example, on AMD, download the AOCL BLAS from the AMD Optimizing CPU Libraries (AOCL) page [https://www.amd.com/en/developer/aocl.html](https://www.amd.com/en/developer/aocl.html). Unpack it to for example `/opt/amd-blis`, then make and run `gemm`.
 
 ```sh
 # on AMD with Advanced Vector Extension
