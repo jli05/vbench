@@ -89,7 +89,7 @@ Up to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clo
 ### Basic Linear Algebra Subprograms (BLAS)
 A [Basic Linear Algebra Subgrams](https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms) library is necessary for making `gemm`.
 
-Implementations include [OpenBLAS](https://github.com/OpenMathLib/OpenBLAS) that work across architectures, or vendor-supplied ones that go further in optimisation for the chips' characteristics.
+Implementations include [OpenBLAS](https://github.com/OpenMathLib/OpenBLAS) that works across architectures, or vendor-supplied ones that go further in optimisation given the characteristics of the vendor-specific chip.
 
 The default OpenBLAS libraries supplied by Linux package managers usually do not benefit from the vector extensions. Compile from the source code:
 
@@ -110,7 +110,7 @@ gcc -O -mavx512f gemm.c timer.c -L/opt/OpenBLAS/lib -lopenblas -lm -o gemm
 LD_LIBRARY_PATH=/opt/OpenBLAS/lib ./gemm
 ```
 
-Use vendor-supplied BLAS library may secure higher performance, while OpenBLAS has the advantage that it is more widely used and tested.
+Using vendor-supplied BLAS library may secure higher performance, while OpenBLAS has the advantage that it is more widely used and tested.
 
 For example, on AMD, download the AOCL BLAS from AMD Optimizing CPU Libraries (AOCL) page [https://www.amd.com/en/developer/aocl.html](https://www.amd.com/en/developer/aocl.html). Unpack it to for example `/opt/amd-blis`, then make and run `gemm`.
 
