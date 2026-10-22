@@ -4,7 +4,7 @@ Traditionally-designed CPU carries out arithmetic or logical compute one per clo
 
 The CPU vector extensions or GPUs can carry out multiple arithmetic operations per clock cycle, increasing the compute throughput by orders. The CPU state would be more deterministic, increasing introspectability and security.
 
-A GPU is traditionally designed with many cores, which can each be programmed separately. The recent Nvidia [Tensor Cores](https://www.nvidia.com/en-us/data-center/tensor-cores/) are specialised to accelerate [matrix-matrix multiplication](https://developer.nvidia.com/blog/programming-tensor-cores-cuda-9/). For example, for 32-bit multiplication, one may first cast each 32-bit operand to 16-bit, do 16x16 multiplication to still obtain a 32-bit result. The throughput would double compared to 32x32 multiplication.
+A GPU is traditionally designed with many cores, which can each be programmed separately. The recent Nvidia [Tensor Cores](https://www.nvidia.com/en-us/data-center/tensor-cores/) are specialised to accelerate [matrix-matrix multiplication](https://developer.nvidia.com/blog/programming-tensor-cores-cuda-9/). For example, for 32-bit multiplication, the Tensor Core can first cast each 32-bit operand to 16-bit, do 16x16 multiplication to still obtain a 32-bit result. The throughput would double compared to 32x32 multiplication.
 
 ## Compute-bound vs Memory-bound
 If after loading <math><mi>n</mi></math> elements of a vector, the number of arithmetic operations will be the same, the program is [memory-bound](https://en.wikipedia.org/wiki/Memory-bound_function). But if the number of arithmetic operations will be higher by some orders, the program is [compute-bound](https://en.wikipedia.org/wiki/CPU-bound).
