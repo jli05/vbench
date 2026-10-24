@@ -85,7 +85,7 @@ On this CPU package, when we allocate more CPUs to `gemm`, each CPU tends to run
 
 Up to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clock frequency, and sheerly faster beyond 4 GHz.
 
-Below is measured performance per watt for two cases where we vary the number of running cores for `gemm`,
+Below is measured [performance per watt](https://www.brief-ds.com/2026/08/10/perf-per-watt.html) for two cases where we vary the number of running cores for `gemm`,
 
 | Cores  |  Average MHz | GFLOP/s   | Watt |  32x32-bit GFLOP/s/watt |
 | ------- | ------------ | ------------------ | ------------ | ----------------------- |
