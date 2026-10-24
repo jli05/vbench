@@ -92,7 +92,7 @@ Below is measured [performance per watt](https://www.brief-ds.com/2026/08/10/per
 | Six  |  3400 |  501  |  15 |   33 |
 | One only |  4800  |  144  |  18 |  8 |
 
-The figures were with respect to allocated running cores.
+The figures were with respect to all allocated running cores in each case.
 
 ## Notes
 ### Basic Linear Algebra Subprograms (BLAS)
