@@ -79,11 +79,18 @@ sudo turbostat --show CPU,frequency,CorWatt,PkgWatt
 
 On an [AMD Ryzen 5 AI CPU package](https://www.amd.com/en/products/processors/laptop/ryzen/ai-300-series/amd-ryzen-ai-5-340.html) with six physical cores, the base clock frequency is 2 GHz for all six, while three can ramp up to 4.8 GHz, three to 3.4 GHz.
 
-In the experiments, when we allocate more CPUs to `gemm`, each CPU tends to run at lower clock frequency and consume less power, and vice versa when we allocate fewer CPUs. Across the experiments, we can collect samples of observed (frequency, watt) of CPU cores, plotted as below,
+On this CPU package, when we allocate more CPUs to `gemm`, each CPU tends to run at lower clock frequency and consume less power, and vice versa when we allocate fewer CPUs. Across the experiments, we can collect samples of observed (frequency, watt) of CPU cores, plotted as below,
 
 ![frequency-watt scatter plot](/assets/power.png)
 
-Up to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clock frequency, and sheerly faster beyond 4 GHz. When all cores are allowed to run `gemm`, the entire CPU package consumes 15 watts; when only one core, the entire package consumes 20 watts.
+Up to 4 GHz, the watt [scales quadratically](/assets/power_log.png) with the clock frequency, and sheerly faster beyond 4 GHz. Below is measured performance per watt for two cases where we vary the number of running cores for `gemm`,
+
+| Cores  |  Average MHz | GFLOP/s   | Watt |  32x32-bit GFLOP/s/watt |
+| ------- | ------------ | ------------------ | ------------ | ----------------------- |
+| Six  |  3400 |  501  |  15 |   33 |
+| One only |  4800  |  144  |  18 |  8 |
+
+The figures were with respect to allocated running cores.
 
 ## Notes
 ### Basic Linear Algebra Subprograms (BLAS)
