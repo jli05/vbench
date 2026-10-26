@@ -7,7 +7,7 @@ In contrast, CPUs with vector extension or GPUs can carry out multiple arithmeti
 A GPU is traditionally designed with many cores, which can each be programmed separately. The recent Nvidia [Tensor Cores](https://www.nvidia.com/en-us/data-center/tensor-cores/) are specialised to accelerate [matrix-matrix multiplication](https://developer.nvidia.com/blog/programming-tensor-cores-cuda-9/). For example, for 32-bit multiplication, the Tensor Core can first cast each 32-bit operand to 16-bit, do 16x16-bit multiplication to still obtain a 32-bit result. The throughput would double compared to 32x32-bit multiplication.
 
 ## Compute-bound vs Memory-bound
-If after loading <math><mi>n</mi></math> elements of a vector, the number of arithmetic operations will be the same, the program is [memory-bound](https://en.wikipedia.org/wiki/Memory-bound_function). But if the number of arithmetic operations will be higher by some orders, the program is [compute-bound](https://en.wikipedia.org/wiki/CPU-bound).
+If it takes more time to move data than to carry out compute, the program is [memory-bound](https://en.wikipedia.org/wiki/Memory-bound_function). Conversely, the program is [compute-bound](https://en.wikipedia.org/wiki/CPU-bound).
 
 Generally vector extensions can do the element-wise arithmetic operations in one clock cycle. We thus benchmark other aspects. The first four programs are memory-bound. The last is compute-bound. 
 
